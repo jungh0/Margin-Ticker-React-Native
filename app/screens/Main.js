@@ -19,8 +19,7 @@ export default class List extends React.Component {
         super();
         this.state = {
             data: [],
-            navigation: navigation,
-            isLoading: true
+            ws: null
         }
         
     }
@@ -30,7 +29,7 @@ export default class List extends React.Component {
     }
 
     onUpdate = (val) => {
-        this.setState({data: val, isLoading: false});
+        this.setState({data: val});
     };
 
     getPostData = async () => {
@@ -40,6 +39,7 @@ export default class List extends React.Component {
         this.onUpdate(data);
 
         const ws = new WebSocket('wss://www.bitmex.com/realtime');
+        this.state.ws = ws;
 
         ws.onopen = () => {
             //ws.send("{\"op\": \"subscribe\", \"args\": [\"trade\":\"XBTUSD\"]}")
@@ -126,7 +126,7 @@ export default class List extends React.Component {
                             renderItem={(obj) => {
                                 return (
                                     <TouchableOpacity
-                                        onPress={() => this.state.navigation.navigate('Details', {data: obj.item })}>
+                                        onPress={() => this.props.navigation.navigate('Details', {onUpdate:this.onUpdate, current: obj.item, data: this.state.data, ws: this.state.ws })}>
                                         <CardView key={obj.index} data={obj.item}/>
                                     </TouchableOpacity>
                                 )
