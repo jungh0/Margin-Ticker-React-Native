@@ -28,7 +28,7 @@ export default class CardView extends React.Component {
 
 const styles = StyleSheet.create({
     container: {
-        height: 60,
+        height: 62,
         padding: 10,
         marginTop: 0,
         borderBottomWidth: 1,

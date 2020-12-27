@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import {
     View,
     Text,
@@ -6,7 +6,6 @@ import {
     ScrollView,
     FlatList,
     TouchableOpacity,
-    Alert
 } from "react-native"
 import CardView from '../components/cardview.js';
 
@@ -17,19 +16,24 @@ export default class List extends React.Component {
         this.state = {
             data: [],
             navigation: navigation,
-            isLoading: false
+            isLoading: true
         }
+        
     }
-    
+
     componentDidMount() {
         this.getPostData();
     }
 
+    onUpdate = (val) => {
+        this.setState({data: val, isLoading: false});
+    };
+
     getPostData = async () => {
         const data = await this.callPostData();
-        //console.log(data)
-        //this.changeState = this.changeState.bind(this)
-        this.setState({data: data, isLoading: true});
+        //console.log(data) this.changeState = this.changeState.bind(this)
+        //this.setState({data: data, isLoading: true});
+        this.onUpdate(data);
 
         const ws = new WebSocket('wss://www.bitmex.com/realtime');
 
@@ -66,7 +70,7 @@ export default class List extends React.Component {
                                             element.side = "#5ab25f";
                                         }
 
-                                        this.setState({data: data, isLoading: true});
+                                        this.onUpdate(data);
                                     }
                                 });
                             }
@@ -91,7 +95,7 @@ export default class List extends React.Component {
     }
 
     callPostData = async () => {
-        return fetch('http://wiffy.io/bitmex/symbol.json?123')
+        return fetch('https://wiffy.io/bitmex/symbol.json?123')
             .then(
                 request => request.json()
             )
