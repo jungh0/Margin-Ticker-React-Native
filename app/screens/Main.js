@@ -20,7 +20,7 @@ export default class List extends React.Component {
             isLoading: false
         }
     }
-
+    
     componentDidMount() {
         this.getPostData();
     }
@@ -28,6 +28,7 @@ export default class List extends React.Component {
     getPostData = async () => {
         const data = await this.callPostData();
         //console.log(data)
+        //this.changeState = this.changeState.bind(this)
         this.setState({data: data, isLoading: true});
 
         const ws = new WebSocket('wss://www.bitmex.com/realtime');
@@ -116,7 +117,8 @@ export default class List extends React.Component {
                             data={this.state.data}
                             renderItem={(obj) => {
                                 return (
-                                    <TouchableOpacity onPress={() => this.state.navigation.navigate('Details')}>
+                                    <TouchableOpacity
+                                        onPress={() => this.state.navigation.navigate('Details', {data: obj.item})}>
                                         <CardView key={obj.index} data={obj.item}/>
                                     </TouchableOpacity>
                                 )
