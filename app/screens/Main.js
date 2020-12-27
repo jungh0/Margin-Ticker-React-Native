@@ -9,7 +9,11 @@ import {
 } from "react-native"
 import CardView from '../components/cardview.js';
 
+
+
+
 export default class List extends React.Component {
+    
 
     constructor({navigation}) {
         super();
@@ -122,7 +126,7 @@ export default class List extends React.Component {
                             renderItem={(obj) => {
                                 return (
                                     <TouchableOpacity
-                                        onPress={() => this.state.navigation.navigate('Details', {data: obj.item})}>
+                                        onPress={() => this.state.navigation.navigate('Details', {data: obj.item })}>
                                         <CardView key={obj.index} data={obj.item}/>
                                     </TouchableOpacity>
                                 )

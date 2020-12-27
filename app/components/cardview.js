@@ -2,7 +2,7 @@ import React from 'react';
 import {Button, StyleSheet, Text, View, Alert} from 'react-native';
 
 export default class CardView extends React.Component {
-    constructor({index, data}) {
+    constructor({data}) {
         super();
 
         this.state = data;
