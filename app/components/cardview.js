@@ -11,8 +11,11 @@ export default class CardView extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-                <Text style={styles.title}>{this.state.title}</Text>
-                <Text style={styles.suntitle}>{this.state.subtitle}</Text>
+                <View style={styles.container2}>
+                    <Text style={styles.title}>{this.state.title}</Text>
+                    <Text style={styles.suntitle}>{this.state.subtitle}</Text>
+                </View>
+
                 <View
                     style={[
                         styles.CardContainer, {
@@ -28,29 +31,29 @@ export default class CardView extends React.Component {
 
 const styles = StyleSheet.create({
     container: {
-        height: 62,
-        padding: 10,
+        padding: 15,
         marginTop: 0,
         borderBottomWidth: 1,
-        borderColor: "#e2e2e2"
+        borderColor: "#efefef",
+        alignContent:'center',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    container2: {
+        alignSelf:'flex-start',
     },
     title: {
-        marginLeft: 5,
         fontSize: 14,
         fontWeight: 'bold'
     },
     suntitle: {
-        marginLeft: 5,
         marginTop: 2,
         fontSize: 12
     },
     CardContainer: {
-        position: 'absolute',
-        right: 0,
-        marginTop: 13,
         width: 100,
         borderRadius: 4,
-        marginRight: 10,
         padding: 5
     },
     CardTitle: {

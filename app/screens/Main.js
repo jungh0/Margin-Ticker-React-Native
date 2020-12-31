@@ -1,19 +1,15 @@
-import React, { useState } from "react"
+import React, {useState} from "react"
 import {
     View,
     Text,
     StyleSheet,
     ScrollView,
     FlatList,
-    TouchableOpacity,
+    TouchableOpacity
 } from "react-native"
 import CardView from '../components/cardview.js';
 
-
-
-
 export default class List extends React.Component {
-    
 
     constructor({navigation}) {
         super();
@@ -21,7 +17,7 @@ export default class List extends React.Component {
             data: [],
             ws: null
         }
-        
+
     }
 
     componentDidMount() {
@@ -34,8 +30,8 @@ export default class List extends React.Component {
 
     getPostData = async () => {
         const data = await this.callPostData();
-        //console.log(data) this.changeState = this.changeState.bind(this)
-        //this.setState({data: data, isLoading: true});
+        // console.log(data) this.changeState = this.changeState.bind(this)
+        // this.setState({data: data, isLoading: true});
         this.onUpdate(data);
 
         const ws = new WebSocket('wss://www.bitmex.com/realtime');
@@ -81,7 +77,7 @@ export default class List extends React.Component {
                         });
                     }
                 } else {
-                    console.log(msgData);
+                    //console.log(msgData);
                 }
             } catch (e) {
                 console.log(msgData);
@@ -126,7 +122,12 @@ export default class List extends React.Component {
                             renderItem={(obj) => {
                                 return (
                                     <TouchableOpacity
-                                        onPress={() => this.props.navigation.navigate('Details', {onUpdate:this.onUpdate, current: obj.item, data: this.state.data, ws: this.state.ws })}>
+                                        onPress={() => this.props.navigation.navigate('Details', {
+                                            onUpdate: this.onUpdate,
+                                            current: obj.item,
+                                            data: this.state.data,
+                                            ws: this.state.ws
+                                        })}>
                                         <CardView key={obj.index} data={obj.item}/>
                                     </TouchableOpacity>
                                 )
