@@ -6,7 +6,8 @@ import {
     ScrollView,
     FlatList,
     TouchableOpacity,
-    ActivityIndicator
+    ActivityIndicator,
+    SafeAreaView
 } from "react-native"
 import CardView from '../components/cardview.js';
 import {AdMobBanner, AdMobInterstitial, PublisherBanner, AdMobRewarded, setTestDeviceIDAsync} from 'expo-ads-admob';
@@ -33,7 +34,6 @@ function toFixed(x) {
     return x;
 }
 
-
 export default class List extends React.Component {
 
     constructor({navigation}) {
@@ -43,7 +43,7 @@ export default class List extends React.Component {
             ws: null,
             percent: "---",
             dominance: "---",
-            loading: false
+            loading: true
         }
     }
 
@@ -59,7 +59,7 @@ export default class List extends React.Component {
         const data = await this.callPostData();
         this.onUpdate(data);
 
-        return;
+        //return;
 
         try {
             const coingecko = await this.callCoingecko();
@@ -198,19 +198,18 @@ export default class List extends React.Component {
     footer() {
         return (
             <View style={styles.containerBox}>
-                
+                <View style={styles.cardContainer}></View>
             </View>
         );
     }
 
     render() {
-        const adUnitID = Platform.select({
-            ios: 'ca-app-pub-0355430122346055/4327411602',
-            android: 'ca-app-pub-0355430122346055/8150913029'
-        });
+        const adUnitID = Platform.select(
+            {ios: 'ca-app-pub-0355430122346055/4327411602', android: 'ca-app-pub-0355430122346055/8150913029'}
+        );
 
         return (
-            <View style={styles.container}>
+            <SafeAreaView style={styles.container}>
                 <FlatList
                     data={this.state.data}
                     renderItem={(obj) => {
@@ -228,14 +227,16 @@ export default class List extends React.Component {
                     }}
                     keyExtractor={(_, index) => index.toString()}
                     ListHeaderComponent={this.header()}
-                    ListFooterComponent={this.footer()}/>
+                    ListFooterComponent={this.footer()}/> 
+                {this._renderCancel()}
+                <View>
+                    <AdMobBanner
+                        bannerSize="smartBannerPortrait"
+                        adUnitID={adUnitID}
+                        servePersonalizedAds="servePersonalizedAds"/>
+                </View>
 
-                <AdMobBanner
-                            bannerSize="smartBannerPortrait"
-                            adUnitID={adUnitID}
-                            servePersonalizedAds="servePersonalizedAds"/>
-                            {this._renderCancel()}
-            </View>
+            </SafeAreaView >
 
         );
     };
@@ -247,6 +248,9 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         backgroundColor: "#f9f9f9"
     },
+    // containerAD: {
+    //     backgroundColor: "#f9f9f9"
+    // },
     containerBox: {
         flex: 1,
         justifyContent: "center",
