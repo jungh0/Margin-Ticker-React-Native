@@ -16,6 +16,7 @@ export default class Detail extends React.Component {
         this.state = route.params;
         navigation.setOptions({title: this.state.current.title})
 
+        return;
         this.state.ws.onmessage = e => {
             msgData = JSON.parse(e.data);
             try {

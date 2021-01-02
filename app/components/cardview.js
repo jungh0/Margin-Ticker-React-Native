@@ -39,6 +39,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
+        backgroundColor: '#ffffff'
     },
     container2: {
         alignSelf:'flex-start',

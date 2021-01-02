@@ -5,9 +5,32 @@ import {
     StyleSheet,
     ScrollView,
     FlatList,
-    TouchableOpacity
+    TouchableOpacity,
+    ActivityIndicator
 } from "react-native"
 import CardView from '../components/cardview.js';
+
+function toFixed(x) {
+    if (Math.abs(x) < 1.0) {
+        var e = parseInt(x.toString().split('e-')[1]);
+        if (e) {
+            x *= Math.pow(10, e - 1);
+            x = '0.' + (
+                new Array(e)
+            ).join('0') + x
+                .toString()
+                .substring(2);
+        }
+    } else {
+        var e = parseInt(x.toString().split('+')[1]);
+        if (e > 20) {
+            e -= 20;
+            x /= Math.pow(10, e);
+            x += (new Array(e + 1)).join('0');
+        }
+    }
+    return x;
+}
 
 export default class List extends React.Component {
 
@@ -15,9 +38,11 @@ export default class List extends React.Component {
         super();
         this.state = {
             data: [],
-            ws: null
+            ws: null,
+            percent: "---",
+            dominance: "---",
+            loading: true
         }
-
     }
 
     componentDidMount() {
@@ -30,9 +55,22 @@ export default class List extends React.Component {
 
     getPostData = async () => {
         const data = await this.callPostData();
-        // console.log(data) this.changeState = this.changeState.bind(this)
-        // this.setState({data: data, isLoading: true});
         this.onUpdate(data);
+
+        try {
+            const coingecko = await this.callCoingecko();
+            // coingeckoMsgData = JSON.parse(coingecko); const coingeckoMsgData =
+            // coingecko.data;
+            this.state.percent = coingecko
+                .data
+                .market_cap_change_percentage_24h_usd
+                .toFixed(2);
+            this.state.dominance = coingecko
+                .data
+                .market_cap_percentage
+                .btc
+                .toFixed(2);
+        } catch (e) {}
 
         const ws = new WebSocket('wss://www.bitmex.com/realtime');
         this.state.ws = ws;
@@ -47,41 +85,55 @@ export default class List extends React.Component {
         };
 
         ws.onmessage = e => {
-            msgData = JSON.parse(e.data);
             try {
-                //console.log(msgData);
-                action = msgData.action;
-                if (action == "insert" || action == "partial") {
-                    //console.log(msgData.data[0]);
-                    tmpData = msgData.data
-                    if (tmpData.length > 0) {
-                        tmpData.forEach(element2 => {
-                            if ("symbol" in element2 && "price" in element2) {
-                                symbol = element2["symbol"].toString();
-                                price = element2["price"].toString();
-                                side = element2["side"].toString();
-                                //console.log(price);
-                                (this.state.data).forEach(element => {
-                                    if (element.title == symbol) {
-                                        element.price = price;
-                                        if (side == "Sell") {
-                                            element.side = "#cb595a";
-                                        } else if (side == "Buy") {
-                                            element.side = "#5ab25f";
-                                        }
+                if (e.data != "received bad response code from server 429") {
+                    msgData = JSON.parse(e.data);
+                    //console.log(msgData);
+                    action = msgData.action;
+                    if (action == "insert" || action == "partial") {
+                        //console.log(msgData.data[0]);
+                        tmpData = msgData.data
+                        if (tmpData.length > 0) {
+                            tmpData.forEach(element2 => {
+                                if ("symbol" in element2 && "price" in element2) {
+                                    symbol = element2["symbol"].toString();
+                                    price = element2["price"];
+                                    side = element2["side"].toString();
+                                    //console.log(price);
+                                    (this.state.data).forEach(element => {
+                                        if (element.title == symbol) {
+                                            if (price > 1000) {
+                                                element.price = price.toFixed(1);
+                                                //.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                            } else if (price > 1) {
+                                                element.price = price.toFixed(4);
+                                                //.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                            } else {
+                                                element.price = toFixed(price.toFixed(8));
+                                            }
 
-                                        this.onUpdate(data);
-                                    }
-                                });
-                            }
-                        });
+                                            if (side == "Sell") {
+                                                element.side = "#cb595a";
+                                            } else if (side == "Buy") {
+                                                element.side = "#5ab25f";
+                                            }
+
+                                            this.onUpdate(data);
+                                            this.state.loading = false;
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    } else {
+                        //console.log(msgData);
                     }
                 } else {
-                    //console.log(msgData);
+                    //console.log(e.data);
                 }
-            } catch (e) {
-                console.log(msgData);
-                console.log(e);
+            } catch (e1) {
+                console.log(e.data);
+                console.log(e1);
             }
         };
 
@@ -102,47 +154,79 @@ export default class List extends React.Component {
             .catch(err => console.log(err))
         }
 
+    callCoingecko = async () => {
+        return fetch('https://api.coingecko.com/api/v3/global?123')
+            .then(
+                request => request.json()
+            )
+            .catch(err => console.log(err))
+        }
+
+    _renderCancel() {
+        if (this.state.loading) {
+            return (
+                <View style={styles.horizontal}>
+                    <ActivityIndicator size="large" color="#ffffff"/>
+                </View>
+            );
+        } else {
+            return null;
+        }
+    }
+
+    header() {
+        return (
+            <View style={styles.containerBox}>
+                <View style={styles.cardContainer}>
+                    <Text style={[styles.topText]}>Change Percent : {this.state.percent}%
+                    </Text>
+                    <Text style={[styles.topText]}>BTC Dominance : {this.state.dominance}%
+                    </Text>
+                </View>
+                <View style={styles.cardContainer}>
+                    <Text style={[styles.blue, styles.symbol]}>Symbol</Text>
+                    <Text style={[styles.blue, styles.price]}>Price</Text>
+                </View>
+            </View>
+        );
+    }
+
+    footer() {
+        return (
+            <View style={styles.containerBox}>
+                <View style={styles.cardContainer}>
+                    <Text
+                        style={{
+                            textAlign: "center",
+                            margin: 20
+                        }}>AD</Text>
+                </View>
+            </View>
+        );
+    }
+
     render() {
         return (
             <View style={styles.container}>
-                <ScrollView style={styles.scrollContainer}>
-                    <View style={styles.cardContainer}>
-                        <Text style={[styles.topText]}>Change Percent:
-                        </Text>
-                        <Text style={[styles.topText]}>BTC Dominance:
-                        </Text>
-                    </View>
-
-                    <View style={styles.cardContainer}>
-                        <Text style={[styles.blue, styles.symbol]}>Symbol</Text>
-                        <Text style={[styles.blue, styles.price]}>Price</Text>
-
-                        <FlatList
-                            data={this.state.data}
-                            renderItem={(obj) => {
-                                return (
-                                    <TouchableOpacity
-                                        onPress={() => this.props.navigation.navigate('Details', {
-                                            onUpdate: this.onUpdate,
-                                            current: obj.item,
-                                            data: this.state.data,
-                                            ws: this.state.ws
-                                        })}>
-                                        <CardView key={obj.index} data={obj.item}/>
-                                    </TouchableOpacity>
-                                )
-                            }}></FlatList>
-                    </View>
-
-                    <View style={styles.cardContainer}>
-                        <Text
-                            style={{
-                                textAlign: "center",
-                                margin: 20
-                            }}>AD</Text>
-                    </View>
-
-                </ScrollView>
+                <FlatList
+                    data={this.state.data}
+                    renderItem={(obj) => {
+                        return (
+                            <TouchableOpacity
+                                onPress={() => this.props.navigation.navigate('Details', {
+                                    onUpdate: this.onUpdate,
+                                    current: obj.item,
+                                    data: this.state.data,
+                                    ws: this.state.ws
+                                })}>
+                                <CardView key={obj.index} data={obj.item}/>
+                            </TouchableOpacity>
+                        )
+                    }}
+                    keyExtractor={(_, index) => index.toString()}
+                    ListHeaderComponent={this.header()}
+                    ListFooterComponent={this.footer()}/> 
+                    {this._renderCancel()}
             </View>
 
         );
@@ -151,9 +235,13 @@ export default class List extends React.Component {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1
+        flex: 1,
+        justifyContent: "center",
+        backgroundColor: "#f9f9f9"
     },
-    scrollContainer: {
+    containerBox: {
+        flex: 1,
+        justifyContent: "center",
         backgroundColor: "#f9f9f9"
     },
     cardContainer: {
@@ -184,5 +272,15 @@ const styles = StyleSheet.create({
         position: 'absolute',
         right: 15,
         fontWeight: 'bold'
+    },
+    horizontal: {
+        width: '100%',
+        height: '100%',
+        position: 'absolute',
+        alignItems: 'center',
+        alignSelf: 'center',
+        justifyContent: "space-around",
+        padding: 10,
+        backgroundColor: 'rgba(0, 0, 0, 0.3)'
     }
 })
