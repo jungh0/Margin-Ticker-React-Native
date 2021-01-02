@@ -9,6 +9,7 @@ import {
     ActivityIndicator
 } from "react-native"
 import CardView from '../components/cardview.js';
+import {AdMobBanner, AdMobInterstitial, PublisherBanner, AdMobRewarded, setTestDeviceIDAsync} from 'expo-ads-admob';
 
 function toFixed(x) {
     if (Math.abs(x) < 1.0) {
@@ -32,6 +33,7 @@ function toFixed(x) {
     return x;
 }
 
+
 export default class List extends React.Component {
 
     constructor({navigation}) {
@@ -41,7 +43,7 @@ export default class List extends React.Component {
             ws: null,
             percent: "---",
             dominance: "---",
-            loading: true
+            loading: false
         }
     }
 
@@ -56,6 +58,8 @@ export default class List extends React.Component {
     getPostData = async () => {
         const data = await this.callPostData();
         this.onUpdate(data);
+
+        return;
 
         try {
             const coingecko = await this.callCoingecko();
@@ -194,18 +198,17 @@ export default class List extends React.Component {
     footer() {
         return (
             <View style={styles.containerBox}>
-                <View style={styles.cardContainer}>
-                    <Text
-                        style={{
-                            textAlign: "center",
-                            margin: 20
-                        }}>AD</Text>
-                </View>
+                
             </View>
         );
     }
 
     render() {
+        const adUnitID = Platform.select({
+            ios: 'ca-app-pub-0355430122346055/4327411602',
+            android: 'ca-app-pub-0355430122346055/8150913029'
+        });
+
         return (
             <View style={styles.container}>
                 <FlatList
@@ -225,8 +228,13 @@ export default class List extends React.Component {
                     }}
                     keyExtractor={(_, index) => index.toString()}
                     ListHeaderComponent={this.header()}
-                    ListFooterComponent={this.footer()}/> 
-                    {this._renderCancel()}
+                    ListFooterComponent={this.footer()}/>
+
+                <AdMobBanner
+                            bannerSize="smartBannerPortrait"
+                            adUnitID={adUnitID}
+                            servePersonalizedAds="servePersonalizedAds"/>
+                            {this._renderCancel()}
             </View>
 
         );
