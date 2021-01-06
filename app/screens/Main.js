@@ -56,7 +56,7 @@ export default class List extends React.Component {
     };
 
     getPostData = async () => {
-        const data = await this.callPostData();
+        const data = async  this.callPostData();
         this.onUpdate(data);
 
         //return;
